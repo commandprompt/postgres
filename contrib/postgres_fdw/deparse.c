@@ -436,7 +436,11 @@ appendWhereClause(StringInfo buf,
 				  List *exprs,
 				  PlannerInfo *root)
 {
+	int			nestlevel;
 	ListCell   *lc;
+
+	/* Make sure any constants in the exprs are printed portably */
+	nestlevel = set_transmission_modes();
 
 	foreach(lc, exprs)
 	{
@@ -454,6 +458,8 @@ appendWhereClause(StringInfo buf,
 
 		is_first = false;
 	}
+
+	reset_transmission_modes(nestlevel);
 }
 
 /*
