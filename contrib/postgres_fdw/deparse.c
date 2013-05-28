@@ -25,7 +25,7 @@
 
 #include "postgres_fdw.h"
 
-#include "access/htup_details.h"
+#include "access/htup.h"
 #include "access/sysattr.h"
 #include "access/transam.h"
 #include "catalog/pg_namespace.h"
@@ -891,7 +891,6 @@ deparseFuncExpr(StringInfo buf, FuncExpr *node, PlannerInfo *root)
 	HeapTuple	proctup;
 	Form_pg_proc procform;
 	const char *proname;
-	bool		use_variadic;
 	bool		first;
 	ListCell   *arg;
 
@@ -931,17 +930,6 @@ deparseFuncExpr(StringInfo buf, FuncExpr *node, PlannerInfo *root)
 		elog(ERROR, "cache lookup failed for function %u", node->funcid);
 	procform = (Form_pg_proc) GETSTRUCT(proctup);
 
-	/* Check if need to print VARIADIC (cf. ruleutils.c) */
-	if (OidIsValid(procform->provariadic))
-	{
-		if (procform->provariadic != ANYOID)
-			use_variadic = true;
-		else
-			use_variadic = node->funcvariadic;
-	}
-	else
-		use_variadic = false;
-
 	/* Print schema name only if it's not pg_catalog */
 	if (procform->pronamespace != PG_CATALOG_NAMESPACE)
 	{
@@ -960,8 +948,6 @@ deparseFuncExpr(StringInfo buf, FuncExpr *node, PlannerInfo *root)
 	{
 		if (!first)
 			appendStringInfoString(buf, ", ");
-		if (use_variadic && lnext(arg) == NULL)
-			appendStringInfoString(buf, "VARIADIC ");
 		deparseExpr(buf, (Expr *) lfirst(arg), root);
 		first = false;
 	}

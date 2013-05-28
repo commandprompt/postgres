@@ -14,7 +14,7 @@
 
 #include "postgres_fdw.h"
 
-#include "access/htup_details.h"
+#include "access/htup.h"
 #include "commands/defrem.h"
 #include "commands/explain.h"
 #include "commands/vacuum.h"
